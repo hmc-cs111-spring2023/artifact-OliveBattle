@@ -1,0 +1,31 @@
+// A note is a letter, with more data
+// Notes- ABCDEFG
+// Octaves- 0-8????
+// note types: w, h, q, e, s
+
+//Everything's a set of notes
+(C3q)
+
+// A melody is a series of notes
+(C3q D3q E3h C3w)
+
+// If a octave or type isn't listed, it'll use the previous one
+(C3q D Eh Cw)
+
+//A chord is a set of notes. Using | means you play the notes at the same time.
+(C3w | E | G) 
+
+//You can define your own items, as long as they aren't a valid chord or 
+Cmaj = (C3w + E + G) 
+my__melody = (Cmaj D3q E3h C3w)
+
+//You can tell them to repeat
+myMelody2 = (my__melody | C2w) * 2
+
+//And you can apply effects
+myMelody3 = (mymelody2).OctaveUp
+myMelody4 = mymelody3.stepDown
+myMelody5 = (mymelody3 * 3 mymelody.stepUp )
+
+//And you can output them
+print(F3w myMelody5)

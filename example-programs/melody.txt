@@ -15,8 +15,8 @@
 //A chord is a set of notes. Using | means you play the notes at the same time.
 (C3w | E | G) 
 
-//You can define your own items, as long as they aren't a valid chord or 
-Cmaj = (C3w + E + G) 
+//You can define your own items, as long as they aren't a valid chord or note
+Cmaj = (C3w | E | G) 
 my__melody = (Cmaj D3q E3h C3w)
 
 //You can tell them to repeat

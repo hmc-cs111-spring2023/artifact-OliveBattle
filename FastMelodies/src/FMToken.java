@@ -5,22 +5,24 @@ abstract class FMToken {
 	ArrayList<FMToken> children;
 	int definedLine = -1;
 
-	public FMToken() {
-		this.parent = null;
-	}
-
-	public FMToken(FMToken parent) {
-		this.parent = parent;
-	}
 
 	public FMToken(FMToken parent, int definedLine) {
 		this.parent = parent;
 		this.definedLine = definedLine;
+		this.children = new ArrayList<FMToken>();
 	}
 
+	public FMToken() {
+		this((FMToken)null, -1);
+		
+	}
+
+	public FMToken(FMToken parent) {
+		this(parent, -1);
+	}
+	
 	public FMToken(int definedLine) {
-		this.parent = null;
-		this.definedLine = definedLine;
+		this((FMToken)null, definedLine);
 	}
 
 	public void setParent(FMToken parent) {
@@ -52,25 +54,6 @@ abstract class FMToken {
 
 		return notes;
 	}
-}
-
-class EmptyFMToken extends FMToken {
-	
-}
-
-class NoteSet extends FMToken {
-	ArrayList<Note> notes;
-	ArrayList<Modifier> modifiers;
-
-	public NoteSet(EmptyFMToken oldtoken) {
-		this.parent = oldtoken.parent;
-		this.children = oldtoken.children;
-		this.definedLine = oldtoken.definedLine;
-
-		int childIndex = this.parent.children.indexOf(oldtoken);
-		this.parent.children.set(childIndex, this);
-	}
-
 }
 
 class Modifier extends FMToken {

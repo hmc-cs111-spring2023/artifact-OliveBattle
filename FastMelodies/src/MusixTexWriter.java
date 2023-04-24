@@ -45,17 +45,20 @@ public class MusixTexWriter {
 		}
 		stringToWrite += "\\en\n";
 
-		stringToWrite += "  \\zendextract";
-		stringToWrite += "  \\end{music}";
+		stringToWrite += "  \\zendextract\n";
+		stringToWrite += "  \\end{music}\n";
 		
 		
 		
 		
 
 		try {
+			System.out.println(stringToWrite);
 			writer.write(stringToWrite);
+			writer.close();
 		} catch (IOException e) {
 			// TODO: handle errors
+			System.out.println("Could not write: " + e.getMessage());
 		}
 	}
 }

@@ -11,7 +11,7 @@ public class TextParser {
 
     // Constants defining the language
     static final char OPENEXPR = '{';
-    static final char CLOSEEXPR = '{';
+    static final char CLOSEEXPR = '}';
 
     static final String COMMENT = "//"; //TODO
 
@@ -33,7 +33,6 @@ public class TextParser {
     public EmptyFMToken readFile(String path) throws IOException {
         EmptyFMToken globalScope = new EmptyFMToken();
         FMToken currentScope = globalScope;
-
         try ( // Try-with-resources - reader and buffer will automatically be closed
             FileReader reader = new FileReader(path);
             BufferedReader buffer = new BufferedReader(reader);
@@ -54,7 +53,6 @@ public class TextParser {
                 oneCharAsStr = "" + currentChar;
                 currentStr += currentChar;
 
-
                 if ( EXPRENDINGS.contains(oneCharAsStr)) {
                     //If this is the end of an expression, process it.
 
@@ -64,7 +62,7 @@ public class TextParser {
                     }
 
                     currentNote = strToNote(currentStr);
-                    if (currentNote != null) {
+                    if (currentNote != null) {   
                         if (currentScope instanceof NoteSet) {
                             ((NoteSet)currentScope).notes.add(currentNote);
                         } else if (currentScope instanceof EmptyFMToken) {
@@ -75,14 +73,14 @@ public class TextParser {
                         }
                        
                     }
-                    else if (CLOSEEXPR == currentChar){
+
+                    if (OPENEXPR == currentChar) {
+                        currentScope = currentScope.addChild(line);
+                    } else if (CLOSEEXPR == currentChar){
                         if(currentScope == globalScope) {
                             // TODO: EXTRA CLOSEPAREN ERROR
                         }
                         currentScope = currentScope.parent;
-                    }
-                    else if (OPENEXPR == currentChar) {
-                        currentScope = currentScope.addChild(line);
                     }
                     
 
@@ -120,12 +118,13 @@ public class TextParser {
      * Returns null otherwise.
      */
     private Note strToNote(String input) {
-        if (input.length() == 0) return null;
-        if (!NOTES.contains("" + input.charAt(0))) return null;
+        if (input.length() < 2) return null;
+        if (! (NOTES.contains("" + input.charAt(0))) ) return null;
 
         Note note = new Note(input.charAt(0), 3);
 
-        for(int i = 1; i < input.length(); ++i ) {
+        //Traverse every char except the first one, and the last one (terminator)
+        for(int i = 1; i < input.length() - 1; ++i ) {
             if (NOTEFLSH.contains("" + input.charAt(i))) {
                 note.setSharpFlat(input.charAt(i));
             } else if (NOTELENGTHS.contains("" + input.charAt(i))) {

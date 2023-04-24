@@ -3,7 +3,7 @@ public class Note {
 	int octave;
 	char sharpOrFlat;
 
-	int length;
+	char length;
 	int startTime;
 
 	public String toString() {
@@ -14,9 +14,26 @@ public class Note {
 		this.label = l;
 	}
 
+	public Note(char l, int o) {
+		this.label = l;
+		this.octave = o;
+	}
+
 	public Note(char l, int o, char s) {
 		this.label = l;
 		this.octave = o;
+		this.sharpOrFlat = s;
+	}
+
+	public void setOctave(int o) {
+		this.octave = o;
+	}
+
+	public void setLength(char c) {
+		this.length = c;
+	}
+
+	public void setSharpFlat(char s) {
 		this.sharpOrFlat = s;
 	}
 }

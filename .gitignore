@@ -1,3 +1,4 @@
 **/*.class
 */src/*.tex
 */src/*.pdf
+*/src/*.log

@@ -28,15 +28,15 @@ public class MusixTexWriter {
 
 	public void writeToTex(ArrayList<Note> notes) {
 		String stringToWrite = (
-			"\\begin{music}\n"
-			+ "  \\parindent10mm\n"
-			+ "  \\setname1{Piano}\n"
-			+ "  \\setstaffs1{2}\n"
-			+ "  \\generalmeter{\\meterfrac44}\n"
-			+ "  \\startextract"
+			"\\input musixtex.tex\n"
+			+ "\\parindent10mm\n"
+			+ "\\setname1{Piano}\n"
+			+ "\\setstaffs1{2}\n"
+			+ "\\generalmeter{\\meterfrac44}\n"
+			+ "\\startpiece\n"
 		);
 
-		stringToWrite += "    \\Notes";
+		stringToWrite += "\\Notes";
 
 		for(int i = 0; i < notes.size(); i++) {
 			Note note = notes.get(i);
@@ -45,8 +45,8 @@ public class MusixTexWriter {
 		}
 		stringToWrite += "\\en\n";
 
-		stringToWrite += "  \\zendextract\n";
-		stringToWrite += "  \\end{music}\n";
+		stringToWrite += "\\endpiece\n";
+		stringToWrite += "\\end\n";
 		
 		
 		

@@ -12,13 +12,12 @@ public class FastMelodies {
         // First off, read the passed file.
         TextParser parser = new TextParser(args[0]);
         //System.out.println("Created Parser.");
-        EmptyFMToken tokens = parser.readFile();
         
 
         // System.out.println("Read file - token has " + tokens.children.size() + " children");
 
         // Then, process all the notes.
-        ArrayList<Note> notes = tokens.processNotes();
+        ArrayList<Note> notes = parser.readFile().getNotes();
 
         // System.out.println("Total output: " + notes.size() + " notes.");
 

@@ -31,37 +31,15 @@ abstract class FMToken {
 
 	public void setLine(int line) {
 		this.definedLine = line;
-	} 
+	}
 
-	public FMToken addChild(int line) {
-		EmptyFMToken child = new EmptyFMToken();
+	public FMToken addChildNoteset(int line) {
+		NoteSet child = new NoteSet();
 		child.setLine(line);
 		this.children.add(child);
 		int childIndex = this.children.size() - 1;
 		this.children.get(childIndex).setParent(this);
 		return child;
 	} 
-
-	public ArrayList<Note> processNotes() {
-		// TODO: edit notes, taking modifiers and stuff into account
-		ArrayList<Note> notes = new ArrayList<Note>();
-		for(int i = 0; i < this.children.size(); i++) {
-			FMToken child = this.children.get(i);
-			if(child instanceof NoteSet) {
-				notes.addAll(((NoteSet)child).notes);
-			}
-		}
-
-		return notes;
-	}
 }
 
-class Modifier extends FMToken {
-	int stepChange;
-	float lengthChange;
-
-}
-
-class Function extends FMToken { // "Print to pdf" command ? 
-
-}

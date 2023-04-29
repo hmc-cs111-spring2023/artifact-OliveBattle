@@ -46,7 +46,7 @@ public class MusixTexWriter {
 			+ "\\startpiece\n"
 		);
 
-		stringToWrite += "\\Notes";
+		stringToWrite += "\\NOtes";
 		stringToWrite += "\\nextstaff";
 
 		for(int i = 0; i < notes.size(); i++) {
@@ -61,7 +61,7 @@ public class MusixTexWriter {
 				lenThisBar = noteLengthNum(note);
 				stringToWrite+="\\en\n";
 				stringToWrite+="\\bar\n";
-				stringToWrite+="\\Notes";
+				stringToWrite+="\\NOtes";
 				if(onTreble) stringToWrite += "\\nextstaff";
 			}
 			lenSinceStaffSwitch += noteLengthNum(note);
@@ -78,12 +78,13 @@ public class MusixTexWriter {
 		stringToWrite += otherStaffsSpacing();
 		stringToWrite += "\\en\n";
 
-		stringToWrite += "\\endpiece\n";
+		stringToWrite += "\\Endpiece\n";
 		stringToWrite += "\\end\n";
 
 		writer.write(stringToWrite);
 		writer.close();
 	}
+
 
 	private String changeStaff(Note n) {
 		if(onTreble && n.octave <= 3 ) {
@@ -133,7 +134,7 @@ public class MusixTexWriter {
 		}
 
 		// Then ramp back to small pieces
-		if ( s > lenPerBar - DOFFSET) { s -= lenPerBar; retStr += "pause";}
+		if ( s > lenPerBar - DOFFSET) { s -= lenPerBar; retStr += "\\sk\\sk\\pause";}
 		if ( s > 2.0 - DOFFSET) { s -= 2.0; retStr += "\\sk\\hp";}
 		if ( s > 1.0 - DOFFSET) { s -= 1.0; retStr += "\\qp";}
 		if ( s > 0.5 - DOFFSET) { s -= 0.5; retStr += "\\ds";}
@@ -182,7 +183,7 @@ public class MusixTexWriter {
 		if(n.chordWithNext) return "";
 		switch(n.length) {
 			case 'h': return "\\sk";
-			case 'e': return "\\bsk";
+			case 'e': return "\\hbsk";
 			default: return "";
 		}
 

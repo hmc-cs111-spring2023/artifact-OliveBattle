@@ -1,12 +1,10 @@
 import java.util.ArrayList; 
 
 public class NoteSet extends FMToken {
-	ArrayList<Note> notes;
 	ArrayList<Modifier> modifiers; //TO USE
 
 	public NoteSet() {
 		super();
-		this.notes = new ArrayList<Note>();
 		this.modifiers = new ArrayList<Modifier>();
 	}
 

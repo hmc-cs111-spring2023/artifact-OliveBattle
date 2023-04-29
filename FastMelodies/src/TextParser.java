@@ -9,8 +9,8 @@ public class TextParser {
     String path;
 
     // Constants defining the language
-    static final char OPENNOTESET = '{';
-    static final char CLOSENOTESET = '}';
+    static final char OPENSTRUCTURE = '{';
+    static final char CLOSESTRUCTURE = '}';
 
     static final char COMMENT = '/'; 
 
@@ -20,7 +20,7 @@ public class TextParser {
     static final String LINEENDINGS = "\r\n";
     static final String SPACING = " \t";
     static final String EXPRENDINGS = SPACING + LINEENDINGS + CHORDUNION
-                         + OPENNOTESET + CLOSENOTESET + COMMENT;
+                         + OPENSTRUCTURE + CLOSESTRUCTURE + COMMENT + ASSIGNMENT;
 
     static final String NOTES = "ABCDEFG";
     static final String NOTELENGTHS = "whqes";
@@ -31,8 +31,8 @@ public class TextParser {
         this.path = path;
     }
 
-    public EmptyFMToken readFile(String path) throws IOException, BadSyntaxException {
-        EmptyFMToken globalScope = new EmptyFMToken();
+    public FastMelodyPiece readFile(String path) throws IOException, BadSyntaxException {
+        FastMelodyPiece globalScope = new FastMelodyPiece();
         FMToken currentScope = globalScope;
         try ( // Try-with-resources - reader and buffer will automatically be closed
             FileReader reader = new FileReader(path);
@@ -43,8 +43,6 @@ public class TextParser {
             String oneCharAsStr; 
             String currentStr = ""; 
             Note currentNote; 
-
-            
 
             int readChar = buffer.read();
 
@@ -66,22 +64,23 @@ public class TextParser {
                     currentNote = strToNote(currentStr);
                     if (currentNote != null) {   
                         if (currentScope instanceof NoteSet) {
-                            ((NoteSet)currentScope).notes.add(currentNote);
-                        } else if (currentScope instanceof EmptyFMToken && currentScope != globalScope) {
-                            currentScope = new NoteSet((EmptyFMToken)currentScope);
-                            ((NoteSet)currentScope).notes.add(currentNote);
+                            ((NoteSet)currentScope).children.add(currentNote);
                         } else {
                             throw new BadSyntaxException("Note " + currentStr + " at line " + line + " is defined outside of a set of notes.");
                         }
                        
-                    }
-
-                    if (OPENNOTESET == currentChar) {
-                        currentScope = currentScope.addChild(line);
                     } 
-                    else if (CLOSENOTESET == currentChar){
+                    // else if (currentStr.length() >= 2) {
+                    //     //If this isn't a note, but still has chracters of substance, save it as the last var name.
+                    //     lastLabel = currentStr.substring(0, currentStr.length() - 1);
+                    // }
+
+                    if (OPENSTRUCTURE == currentChar) {
+                        currentScope = currentScope.addChildNoteset(line);
+                    } 
+                    else if (CLOSESTRUCTURE == currentChar){
                         if(currentScope == globalScope) {
-                           throw new BadSyntaxException("Unexpected " + CLOSENOTESET + " at line " + line);
+                           throw new BadSyntaxException("Unexpected " + CLOSESTRUCTURE + " at line " + line);
                         }
                         currentScope = currentScope.parent;
                     } 
@@ -103,9 +102,11 @@ public class TextParser {
                         }
                     } 
                     else if ( CHORDUNION.contains(oneCharAsStr)) {
-                        if (currentScope instanceof NoteSet && ((NoteSet)currentScope).notes.size() > 0) {
-                            int len = ((NoteSet)currentScope).notes.size();
-                            ((NoteSet)currentScope).notes.get(len-1).chordWithNext = true;
+                        if (currentScope instanceof NoteSet 
+                            && currentScope.children.size() > 0
+                            && currentScope.children.get(currentScope.children.size()-1) instanceof Note) {
+                            
+                            ((Note)currentScope.children.get(currentScope.children.size()-1)).chordWithNext = true;
                         } else {
                             throw new BadSyntaxException("Your inputted music file has an unexpected " + currentChar + " at line " + line);
                         }
@@ -123,14 +124,14 @@ public class TextParser {
             throw new BadSyntaxException("Your inputted music file defines a structure on line " + currentScope.definedLine + ", but it has no matching }.");
         }
 
+        globalScope.printTarget = (NoteSet)globalScope.children.get(globalScope.children.size()-1);
+
         return globalScope;
     }
 
-    public EmptyFMToken readFile() throws IOException, BadSyntaxException {
+    public FastMelodyPiece readFile() throws IOException, BadSyntaxException {
         return readFile(this.path);
     }
-
-
 
     static String readFirstLineFromFile(String path) throws IOException {
 	    try (FileReader fr = new FileReader(path);
@@ -176,5 +177,4 @@ public class TextParser {
         lastOctave = note.octave;
         return note;
     }
-
 }

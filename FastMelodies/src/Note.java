@@ -1,4 +1,4 @@
-public class Note {
+public class Note extends FMToken {
 	char label;
 	int octave;
 	char sharpOrFlat = ' ';

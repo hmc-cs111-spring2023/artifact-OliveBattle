@@ -1,0 +1,16 @@
+// The core of FastMelodies is sets of notes.
+{C4q D4q E4q F4q G4q A5q B5q C5q}
+
+// If you don't provide a length or octave, the one from the previous note will just be used.
+{C4q D E F G A5 B C}
+
+//There are a number of note lengths, as well as sharps and flats.
+{Cw Ch Cq Ce Cs}
+{C Cb C# Cn}
+
+//To form a chord, use the | operator to join notes.
+{ C4q | E4q G4q }
+{C|E|G C|E|A5 G3h|D4|B5}
+
+//The last set of notes defined will become the output.
+{Ch|E|Gq A5e G4e Ch|Eh|A5h}

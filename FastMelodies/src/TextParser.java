@@ -4,45 +4,47 @@ import java.io.BufferedReader;
 // import java.util.ArrayList; 
 // import java.util.Set;
 
-
 public class TextParser {
 
     String path;
 
     // Constants defining the language
-    static final char OPENEXPR = '{';
-    static final char CLOSEEXPR = '}';
+    static final char OPENNOTESET = '{';
+    static final char CLOSENOTESET = '}';
 
-    static final String COMMENT = "//"; //TODO
+    static final char COMMENT = '/'; 
 
-    static final String CHORDUNION = "|"; //TODO
+    static final String CHORDUNION = "+|";
     static final String ASSIGNMENT = "="; //TODO
 
-    static final String LINEENDINGS = "\r\n"; //TODO: FIX
-    static final String EXPRENDINGS = " " + LINEENDINGS + CHORDUNION + OPENEXPR + CLOSEEXPR;
+    static final String LINEENDINGS = "\r\n";
+    static final String SPACING = " \t";
+    static final String EXPRENDINGS = SPACING + LINEENDINGS + CHORDUNION
+                         + OPENNOTESET + CLOSENOTESET + COMMENT;
 
     static final String NOTES = "ABCDEFG";
     static final String NOTELENGTHS = "whqes";
     static final String NOTEFLSH = "#bn";
-    static final String OCTAVES = "12345678";
+    static final String OCTAVES = "12345";
 
     public TextParser(String path) {
         this.path = path;
     }
 
-    public EmptyFMToken readFile(String path) throws IOException {
+    public EmptyFMToken readFile(String path) throws IOException, BadSyntaxException {
         EmptyFMToken globalScope = new EmptyFMToken();
         FMToken currentScope = globalScope;
         try ( // Try-with-resources - reader and buffer will automatically be closed
             FileReader reader = new FileReader(path);
             BufferedReader buffer = new BufferedReader(reader);
         ) {
-            int line = 0;
+            int line = 1;
             Character currentChar; 
             String oneCharAsStr; 
             String currentStr = ""; 
             Note currentNote; 
 
+            
 
             int readChar = buffer.read();
 
@@ -65,29 +67,50 @@ public class TextParser {
                     if (currentNote != null) {   
                         if (currentScope instanceof NoteSet) {
                             ((NoteSet)currentScope).notes.add(currentNote);
-                        } else if (currentScope instanceof EmptyFMToken) {
+                        } else if (currentScope instanceof EmptyFMToken && currentScope != globalScope) {
                             currentScope = new NoteSet((EmptyFMToken)currentScope);
                             ((NoteSet)currentScope).notes.add(currentNote);
                         } else {
-                            // TODO: NOTE OUT OF PLACE ERROR
+                            throw new BadSyntaxException("Note " + currentStr + " at line " + line + " is defined outside of a set of notes.");
                         }
                        
                     }
 
-                    if (OPENEXPR == currentChar) {
+                    if (OPENNOTESET == currentChar) {
                         currentScope = currentScope.addChild(line);
-                    } else if (CLOSEEXPR == currentChar){
+                    } 
+                    else if (CLOSENOTESET == currentChar){
                         if(currentScope == globalScope) {
-                            // TODO: EXTRA CLOSEPAREN ERROR
+                           throw new BadSyntaxException("Unexpected " + CLOSENOTESET + " at line " + line);
                         }
                         currentScope = currentScope.parent;
+                    } 
+                    else if ( COMMENT == currentChar) {
+                        readChar = buffer.read();
+                        currentChar = (char)readChar;
+                        if (currentChar == COMMENT) {
+                            //If you have two '/' in a row, then skip to the end of the line
+                            while(readChar != 0 && !LINEENDINGS.contains(oneCharAsStr)) {
+                                readChar = buffer.read();
+                                currentChar = (char)readChar;
+                                oneCharAsStr = "" + currentChar;
+                            }
+                            //Then incrememnt the line, as usual.
+                            ++line;
+                            
+                        } else {
+                            throw new BadSyntaxException("Your inputted music file has an unexpected " + COMMENT + " at line " + line);
+                        }
+                    } 
+                    else if ( CHORDUNION.contains(oneCharAsStr)) {
+                        if (currentScope instanceof NoteSet && ((NoteSet)currentScope).notes.size() > 0) {
+                            int len = ((NoteSet)currentScope).notes.size();
+                            ((NoteSet)currentScope).notes.get(len-1).chordWithNext = true;
+                        } else {
+                            throw new BadSyntaxException("Your inputted music file has an unexpected " + currentChar + " at line " + line);
+                        }
                     }
                     
-
-                    else {
-                        //TODO: UNKNOWN TOKEN ERROR
-                    }
-
                     //Then zero out the currentStr.
                     currentStr = "";
                 } 
@@ -96,10 +119,14 @@ public class TextParser {
             }
         }
 
+        if(currentScope != globalScope) {
+            throw new BadSyntaxException("Your inputted music file defines a structure on line " + currentScope.definedLine + ", but it has no matching }.");
+        }
+
         return globalScope;
     }
 
-    public EmptyFMToken readFile() throws IOException {
+    public EmptyFMToken readFile() throws IOException, BadSyntaxException {
         return readFile(this.path);
     }
 
@@ -114,27 +141,39 @@ public class TextParser {
 
     char currentNoteTime;
 
-    /* Returns a Note object if the given string is a valid note.
+
+    /* 
+     * Returns a Note object if the given string is a valid note.
      * Returns null otherwise.
      */
+    char lastLength = 'q';
+    int lastOctave = 4;
     private Note strToNote(String input) {
         if (input.length() < 2) return null;
         if (! (NOTES.contains("" + input.charAt(0))) ) return null;
 
-        Note note = new Note(input.charAt(0), 3);
+        Note note = new Note(input.charAt(0));
+        note.length = lastLength;
+        note.octave = lastOctave;
 
         //Traverse every char except the first one, and the last one (terminator)
         for(int i = 1; i < input.length() - 1; ++i ) {
             if (NOTEFLSH.contains("" + input.charAt(i))) {
-                note.setSharpFlat(input.charAt(i));
+                note.sharpOrFlat = input.charAt(i);
             } else if (NOTELENGTHS.contains("" + input.charAt(i))) {
-                note.setLength(input.charAt(i));
+                note.length = input.charAt(i);
             } else if (OCTAVES.contains("" + input.charAt(i))) {
-                note.setOctave((int)input.charAt(i));
+                note.octave = input.charAt(i) - 48;
+                // To convert from char (0-255) to int (0-9), subtract 48
             } else {
                 return null;
             }
         }
+
+        // If this is a valid note, set the last used octave correctly before
+        // returning the note.
+        lastLength = note.length;
+        lastOctave = note.octave;
         return note;
     }
 
